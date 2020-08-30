@@ -1,8 +1,11 @@
-local: build
-	sam local invoke
+local-scrape: build
+	sam local invoke ClimbingScraperFunction
 
-build:
-	sam build --use-container
+local-show: build
+	sam local invoke ClimbingDisplayFunction
 
 deploy: build
 	sam deploy
+
+build:
+	sam build --use-container

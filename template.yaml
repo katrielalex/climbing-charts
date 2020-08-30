@@ -15,7 +15,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: climbing-scrape/
-      Handler: app.lambda_handler
+      Handler: app.scrape_walls
       Runtime: python3.8
       Description: Scrape capacity info from the Lakeland Climbing Centre walls and stash it in DynamoDB
       Policies:
@@ -30,6 +30,25 @@ Resources:
             Name: every-five-minutes
             Description: I mean, you run the thing every five minutes, how hard is it
             Enabled: True
+
+  ClimbingDisplayFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: climbing-scrape/
+      Handler: app.load_from_dynamo
+      Runtime: python3.8
+      Description: Load and print scraped capacity info
+      Policies:
+      - AmazonDynamoDBFullAccess
+      - AWSXRayDaemonWriteAccess
+      Tracing: Active
+      Events:
+        DisplayClimbingCapacity:
+          Type: Api
+          Properties:
+            Path: /
+            Method: get
+
 
   DynamoDBTable:
     Type: AWS::Serverless::SimpleTable
@@ -49,3 +68,6 @@ Outputs:
   DynamoDBTable:
     Description: "I don't know what I'm doing this is a dynamodb table"
     Value: !GetAtt DynamoDBTable.Arn
+  DisplayClimbingCapacityApi:
+    Description: "API Gateway endpoint URL for Prod stage for display function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
