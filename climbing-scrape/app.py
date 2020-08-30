@@ -3,6 +3,7 @@ import json
 import re
 import time
 
+import boto3
 import bs4
 import requests
 import yaml
@@ -23,6 +24,14 @@ def lambda_handler(_event, _context):
         'var data = (.*?);',
         source, re.DOTALL,
     ).group(1))
+
+    boto3.resource('dynamodb').Table('climbing-capacity-info').put_item(
+        TableName='climbing-capacity-info',
+        Item={
+            'timestamp': int(time.time()),
+            'data': {'M': data},
+        },
+    )
 
     return {
         'statusCode': 200,
