@@ -1,0 +1,9 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "climbing-scraper"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-6eznz0xeaq1f"
+s3_prefix = "climbing-scraper"
+region = "eu-west-2"
+capabilities = "CAPABILITY_IAM"

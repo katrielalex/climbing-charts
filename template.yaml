@@ -8,32 +8,44 @@ Description: >
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
-    Timeout: 3
+    Timeout: 30
 
 Resources:
-  HelloWorldFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+  ClimbingScraperFunction:
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: climbing-scrape/
       Handler: app.lambda_handler
       Runtime: python3.8
+      Description: Scrape capacity info from the Lakeland Climbing Centre walls and stash it in DynamoDB
+      Policies:
+      - AmazonDynamoDBFullAccess
+      - AWSXRayDaemonWriteAccess
+      Tracing: Active
       Events:
-        HelloWorld:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+        EveryFiveMinutes:
+          Type: Schedule
           Properties:
-            Path: /hello
-            Method: get
+            Schedule: rate(5 minutes)
+            Name: every-five-minutes
+            Description: I mean, you run the thing every five minutes, how hard is it
+            Enabled: True
+
+  DynamoDBTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: timestamp
+        Type: Number
+      TableName: climbing-capacity-info
 
 Outputs:
-  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
-  # Find out more about other implicit resources you can reference within SAM
-  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  HelloWorldApi:
-    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  HelloWorldFunction:
-    Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt HelloWorldFunction.Arn
-  HelloWorldFunctionIamRole:
-    Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt HelloWorldFunctionRole.Arn
+  ClimbingScraperFunction:
+    Description: "ClimbingScraperFunction Function ARN"
+    Value: !GetAtt ClimbingScraperFunction.Arn
+  SillyFunctionIamRole:
+    Description: "Implicit IAM Role created for my function"
+    Value: !GetAtt ClimbingScraperFunctionRole.Arn
+  DynamoDBTable:
+    Description: "I don't know what I'm doing this is a dynamodb table"
+    Value: !GetAtt DynamoDBTable.Arn
