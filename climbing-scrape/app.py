@@ -54,7 +54,8 @@ def load_from_dynamo(_event, _context):
         .stack()\
         .apply(pd.Series)\
         .unstack()\
-        .swaplevel(axis=1)
+        .swaplevel(axis=1)\
+        .sort_index()
     return {
         'statusCode': 200,
         'body': df.to_csv(),
