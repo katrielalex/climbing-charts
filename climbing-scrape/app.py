@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import re
+import time
 
 import bs4
 import requests
@@ -14,17 +15,16 @@ def lambda_handler(_event, _context):
         requests.get(
             ROCKGYMPRO,
         ).text,
+        features='html.parser',
     ).findAll('script')[2].string
 
     # Use YAML not JSON because it uses single-quote keys which are invalid JSON
-    data = yaml.load(re.search(
+    data = yaml.safe_load(re.search(
         'var data = (.*?);',
         source, re.DOTALL,
     ).group(1))
 
-    print(data)
-
     return {
         'statusCode': 200,
-        'body': json.dumps(data),
+        'body': json.dumps({int(time.time()): data}),
     }
