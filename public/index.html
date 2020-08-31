@@ -47,7 +47,7 @@
                         .append("g")
                         .attr("transform", "translate(" + margin.left + "," + margin.top + ")"),
 
-                    line = d3.line().x(d => x(d.x)).y(d => y(d.y));
+                    line = d3.line().x(d => x(d.x)).y(d => y(d.y)).curve(d3.curveBasis);
 
                 // Manually draw all the bits
                 svg.append("g")
@@ -57,6 +57,7 @@
                     .call(d3.axisLeft(y));
                 svg.append("path")
                     .datum(data)
+                    .attr("class", "line")
                     .attr("fill", "none")
                     .attr("stroke", "steelblue")
                     .attr("stroke-width", 1.5)
