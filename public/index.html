@@ -7,6 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.20/lodash.min.js"
         integrity="sha256-ur/YlHMU96MxHEsy3fHGszZHas7NzH4RQlD4tDVvFhw=" crossorigin="anonymous"></script>
     <script>
+        const url = "//zuyt9vzw4k.execute-api.eu-west-2.amazonaws.com/";
         const names = {
             VES: "Vauxeast",
             VWS: "Vauxwest",
@@ -15,7 +16,7 @@
             CRO: "Croywall",
             HAR: "Harrowall",
         };
-        d3.json("//localhost:3000").then(function (data) {
+        d3.json(url).then(function (data) {
             // {HAR: {count: <timeseries>, capacity: <int>}, ...}
             const byWall = _.transform(data, function (result, value, key) {
                 const wall = key.substring(2, 5),

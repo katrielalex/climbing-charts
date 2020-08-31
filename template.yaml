@@ -48,9 +48,6 @@ Resources:
           Properties:
             Path: /
             Method: get
-            Cors:
-              AllowOrigin: '*'
-
 
   DynamoDBTable:
     Type: AWS::Serverless::SimpleTable
