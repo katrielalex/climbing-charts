@@ -3,12 +3,14 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
   climbing-charts
 
-  Sample SAM Template for climbing-charts
+  Make charts of the capacity of climbing walls in London over time
 
-# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
     Timeout: 30
+  Api:
+    Cors:
+      AllowOrigin: "'*'"
 
 Resources:
   ClimbingScraperFunction:
