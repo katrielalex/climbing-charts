@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<head>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/css-spinning-spinners/1.1.0/load2.css" />
+    <script src="https://d3js.org/d3.v6.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.20/lodash.min.js"
+        integrity="sha256-ur/YlHMU96MxHEsy3fHGszZHas7NzH4RQlD4tDVvFhw=" crossorigin="anonymous"></script>
+    <script>
+        const names = {
+            VES: "Vauxeast",
+            VWS: "Vauxwest",
+            RAV: "Ravenswall",
+            CNW: "Canarywall",
+            CRO: "Croywall",
+            HAR: "Harrowall",
+        };
+        d3.json("//localhost:3000").then(function (data) {
+            // {HAR: {count: <timeseries>, capacity: <int>}, ...}
+            const byWall = _.transform(data, function (result, value, key) {
+                const wall = key.substring(2, 5),
+                    k = key.includes("count") ? "count" : "capacity",
+                    v = k == "count" ? value : Math.min(...Object.values(value));
+                (result[wall] || (result[wall] = {}))[k] = v;
+            }, {});
+
+            _.forOwn(byWall, function (data, wall) {
+                const capacity = parseInt(data['capacity']);
+                var data = Object
+                    .entries(data['count'])
+                    .map(row => ({ x: (new Date(parseInt(row[0]) * 1000)), y: row[1] }));
+
+                var margin = { top: 30, right: 20, bottom: 30, left: 50 },
+                    width = 600 - margin.left - margin.right,
+                    height = 270 - margin.top - margin.bottom,
+
+                    x = d3.scaleTime().domain(d3.extent(data, d => d.x)).range([0, width]),
+                    y = d3.scaleLinear().domain([0, capacity]).range([height, 0]),
+
+                    svg = d3
+                        .select("#data")
+                        .attr("class", null)
+                        .append("svg")
+                        .attr("width", width + margin.left + margin.right)
+                        .attr("height", height + margin.top + margin.bottom)
+                        .append("g")
+                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")"),
+
+                    line = d3.line().x(d => x(d.x)).y(d => y(d.y));
+
+                // Manually draw all the bits
+                svg.append("g")
+                    .attr("transform", "translate(0," + height + ")")
+                    .call(d3.axisBottom(x));
+                svg.append("g")
+                    .call(d3.axisLeft(y));
+                svg.append("path")
+                    .datum(data)
+                    .attr("fill", "none")
+                    .attr("stroke", "steelblue")
+                    .attr("stroke-width", 1.5)
+                    .attr("d", line);
+                svg.append("text")
+                    .attr("x", (width / 2))
+                    .attr("y", 0 - (margin.top / 2))
+                    .attr("text-anchor", "middle")
+                    .style("font-size", "16px")
+                    .style("font-family", "sans-serif")
+                    .text(names[wall]);
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <div id="data" class="loading" style="text-align: center;"></div>
+</body>

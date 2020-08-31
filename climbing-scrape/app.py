@@ -43,20 +43,25 @@ def scrape_walls(_event, _context):
 
 
 def load_from_dynamo(_event, _context):
-    df = pd.DataFrame.from_dict(
-        {
-            y['timestamp']: y['data']['M']
-            for y
-            in boto3.resource('dynamodb').Table(TABLE).scan()['Items']
-        },
-        orient='index',
-    )\
-        .stack()\
-        .apply(pd.Series)\
-        .unstack()\
-        .swaplevel(axis=1)\
-        .sort_index()
     return {
         'statusCode': 200,
-        'body': df.to_csv(),
+        'headers': {
+            'Access-Control-Allow-Headers': 'Content-Type',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET',
+        },
+        'body': pd.DataFrame.from_dict(
+            {
+                y['timestamp']: y['data']['M']
+                for y
+                in boto3.resource('dynamodb').Table(TABLE).scan()['Items']
+            },
+            orient='index',
+        )
+        .stack()
+        .apply(pd.Series)
+        .unstack()
+        .swaplevel(axis=1)
+        .sort_index()
+        .loc[:, pd.IndexSlice[:, ['count', 'capacity']]].to_json(),
     }

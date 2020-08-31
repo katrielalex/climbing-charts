@@ -4,6 +4,9 @@ local-scrape: build
 local-show: build
 	sam local invoke ClimbingDisplayFunction
 
+local-serve: build
+	sam local start-api
+
 deploy: build
 	sam deploy
 
