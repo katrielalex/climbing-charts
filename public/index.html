@@ -6,6 +6,9 @@
     <script src="https://d3js.org/d3.v5.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.20/lodash.min.js"
         integrity="sha256-ur/YlHMU96MxHEsy3fHGszZHas7NzH4RQlD4tDVvFhw=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.27.0/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"
+        integrity="sha256-R4pqcOYV8lt7snxMQO/HSbVCFRPMdrhAFMH+vr9giYI=" crossorigin="anonymous"></script>
     <script>
         const url = "https://zuyt9vzw4k.execute-api.eu-west-2.amazonaws.com/Prod";
         const names = {
@@ -27,92 +30,39 @@
 
             _.forOwn(byWall, function (data, wall) {
                 const capacity = parseInt(data['capacity']);
-                var data = Object
-                    .entries(data['count'])
-                    .map(row => ({ x: (new Date(parseInt(row[0]) * 1000)), y: row[1] }));
+                var myChart = new Chart(
+                    d3.select("#data").attr("class", null).append("canvas")._groups[0][0].getContext('2d'),
+                    {
+                        type: 'line',
+                        data: {
+                            datasets: [{
+                                data: Object
+                                    .entries(data['count'])
+                                    .map(row => ({ t: (new Date(parseInt(row[0]) * 1000)), y: row[1] })),
+                                pointRadius: 1,
+                                label: names[wall],
+                            }],
+                        },
+                        options: {
+                            scales: {
+                                yAxes: [{
+                                    ticks: {
+                                        beginAtZero: true,
+                                        suggestedMax: capacity,
+                                    }
+                                }],
+                                xAxes: [{
+                                    type: 'time',
+                                    time: {
+                                        unit: 'day',
+                                        displayFormats: {
+                                            day: 'ddd Do MMM'
+                                        },
+                                    }
 
-                var margin = { top: 30, right: 20, bottom: 30, left: 50 },
-                    width = 600 - margin.left - margin.right,
-                    height = 270 - margin.top - margin.bottom,
-
-                    x = d3.scaleTime().domain(d3.extent(data, d => d.x)).range([0, width]),
-                    y = d3.scaleLinear().domain([0, capacity]).range([height, 0]),
-
-                    svg = d3
-                        .select("#data")
-                        .attr("class", null)
-                        .append("svg")
-                        .attr("width", width + margin.left + margin.right)
-                        .attr("height", height + margin.top + margin.bottom)
-                        .append("g")
-                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")"),
-
-                    line = d3.line().x(d => x(d.x)).y(d => y(d.y)).curve(d3.curveBasis);
-
-                // Manually draw all the bits
-                svg.append("g")
-                    .attr("transform", "translate(0," + height + ")")
-                    .call(d3.axisBottom(x));
-                svg.append("g")
-                    .call(d3.axisLeft(y));
-                svg.append("path")
-                    .datum(data)
-                    .attr("class", "line")
-                    .attr("fill", "none")
-                    .attr("stroke", "steelblue")
-                    .attr("stroke-width", 1.5)
-                    .attr("d", line);
-                svg.append("text")
-                    .attr("x", (width / 2))
-                    .attr("y", 0 - (margin.top / 2))
-                    .attr("text-anchor", "middle")
-                    .style("font-size", "16px")
-                    .style("font-family", "sans-serif")
-                    .text(names[wall]);
-                var bisect = d3.bisector(function (d) { return d.x; }).left;
-
-                // Create the circle that travels along the curve of chart
-                var focus = svg
-                    .append('g')
-                    .append('circle')
-                    .style("fill", "none")
-                    .attr("stroke", "black")
-                    .attr('r', 8.5)
-                    .style("opacity", 0)
-
-                // Create the text that travels along the curve of chart
-                var focusText = svg
-                    .append('g')
-                    .append('text')
-                    .style("opacity", 0)
-                    .attr("text-anchor", "left")
-                    .attr("alignment-baseline", "middle")
-
-                svg.append('rect')
-                    .style("fill", "none")
-                    .style("pointer-events", "all")
-                    .attr('width', width)
-                    .attr('height', height)
-                    .on('mouseover', function () {
-                        focus.style("opacity", 1);
-                        focusText.style("opacity", 1);
-                    })
-                    .on('mousemove', function () {
-                        // recover coordinate we need
-                        var x0 = x.invert(d3.mouse(this)[0]);
-                        var i = bisect(data, x0, 1);
-                        selectedData = data[i]
-                        focus
-                            .attr("cx", x(selectedData.x))
-                            .attr("cy", y(selectedData.y))
-                        focusText
-                            .html(`${selectedData.y} (${selectedData.x.toISOString()})`)
-                            .attr("x", x(selectedData.x) + 15)
-                            .attr("y", y(selectedData.y))
-                    })
-                    .on('mouseout', function () {
-                        focus.style("opacity", 0)
-                        focusText.style("opacity", 0)
+                                }],
+                            }
+                        }
                     });
             });
         });
