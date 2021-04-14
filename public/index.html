@@ -18,6 +18,7 @@
             CNW: "Canarywall",
             CRO: "Croywall",
             HAR: "Harrowall",
+            BWG: "Bethwall Green"
         };
         d3.json(url).then(function (data) {
             // {HAR: {count: <timeseries>, capacity: <int>}, ...}
@@ -38,6 +39,7 @@
                             datasets: [{
                                 data: Object
                                     .entries(data['count'])
+                                    .filter(row => parseInt(row[0]) > 1617577200)
                                     .map(row => ({ t: (new Date(parseInt(row[0]) * 1000)), y: row[1] })),
                                 pointRadius: 1,
                                 label: names[wall],
