@@ -31,6 +31,7 @@
 
             _.forOwn(byWall, function (data, wall) {
                 const capacity = parseInt(data['capacity']);
+                const amonthago = Math.floor((Date.now() - 2629743833 /* milliseconds in a month */) / 1000);
                 var myChart = new Chart(
                     d3.select("#data").attr("class", null).append("canvas")._groups[0][0].getContext('2d'),
                     {
@@ -39,7 +40,7 @@
                             datasets: [{
                                 data: Object
                                     .entries(data['count'])
-                                    .filter(row => parseInt(row[0]) > 1617577200)
+                                    .filter(row => parseInt(row[0]) > amonthago)
                                     .map(row => ({ t: (new Date(parseInt(row[0]) * 1000)), y: row[1] })),
                                 pointRadius: 1,
                                 label: names[wall],
